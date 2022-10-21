@@ -43,28 +43,10 @@ Abstractly speaking, a specification of a function has several parts:
 
 
 public class BinTree<G extends Comparable<G>> implements Comparable<BinTree<G>>{
-
-    class Node<G extends Comparable<G>> implements Comparable<Node<G>>{
-        Node left;
-        Node right;
-        G data;
-
-        Node(G data){
-            this.data = data;
-        }
-        Node(){}
-
-        @Override
-        public int compareTo(Node<G> node){
-            return 0;
-        }
-    }
-
-    private Node root;
+    private Node<G> root;
 
     public BinTree(G data){
-        Node<G> node = new Node<>(data);
-        root = node;
+        root = new Node<>(data);
 
     }
     public BinTree(){
@@ -72,24 +54,35 @@ public class BinTree<G extends Comparable<G>> implements Comparable<BinTree<G>>{
     }
 
     //====================BST operations
-    public Node<G> insert(G data, Node<G> node){
-        return new Node<G>();
+    /**
+     * @param data Data to be entered into the tree
+     * @param direction move left or right
+     */
+    public void insert(G data, Node<G> direction){}
+
+    /**
+     * @param data Data to be found
+     * @return Whether the data was found or not
+     */
+    public boolean search(G data){
+        return true;
     }
 
-    public Node<G> search(G data){
-        return new Node<>();
-    }
-
-    public Node<G> delete(G data){
-        return new Node<G>();
+    /**
+     *
+     * @param data Data to be deleted
+     * @return  Whether the data was deleted
+     */
+    public boolean delete(G data){
+        return true;
     }
 
     //=================Getters and setters
-    public Node getRoot() {
+    public Node<G> getRoot() {
         return root;
     }
 
-    public void setRoot(Node root) {
+    public void setRoot(Node<G> root) {
         this.root = root;
     }
 

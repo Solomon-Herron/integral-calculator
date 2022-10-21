@@ -13,6 +13,14 @@ public class Node<G extends Comparable<G>> implements Comparable<Node<G>> {
 
     //Getters setters
 
+    public Node<G> getNext() {
+        return next;
+    }
+
+    public void setNext(Node<G> next) {
+        this.next = next;
+    }
+
     public Node<G> getLeft() {
         return left;
     }
