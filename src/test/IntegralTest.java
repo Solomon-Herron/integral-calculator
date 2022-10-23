@@ -40,10 +40,11 @@ public class IntegralTest {
     void calculateValue(){
 
     }
+// *      <Expression><comma><space><upperboud><pipe><lowerboun><space><=><space><value><newline>
 
     void buildTestCaseMap(){
         testCases.put("standardDefinite",      "1|3 6x+3x^2-7");
-        testCases.put("standardIndefinite",    "| 4x^2+x+3");
+        testCases.put("standardIndefinite",    "| x+4x^2+3");
         testCases.put("noConstant",            "1|3 4x^2+2x^3-x");
         testCases.put("aGreaterThanb",         "5|1 3x^2+6x-76x^4-7");
         testCases.put("maxDegree",             "| 4x^10+x+3"); //fill this out with all terms
@@ -56,10 +57,12 @@ public class IntegralTest {
         testCases.put("multipleTrigFunctions", "| -cos 4x-3x^4+2sin 10x–6x^2+2");
 
         // calculate these integrals... (in standard form)
-        expectedIntegral.put("standardDefinite",      "");
-        expectedIntegral.put("standardIndefinite",    "");
-        expectedIntegral.put("noConstant",            "");
-        expectedIntegral.put("aGreaterThanb",         "");
+        //(3/2)x^2 + 4x -x^-1, 1|4 = 35.250
+        //x^3 + x^2 + x + C
+        expectedIntegral.put("standardDefinite",      "x^3 + 3x^2 - 14, 1|3 = 36"); // 1|3 6x+3x^2-7
+        expectedIntegral.put("standardIndefinite",    "(4/3)x^3 + (1/2)x^2 + 3x + C"); //| x+4x^2+3 
+        expectedIntegral.put("noConstant",            ""); //1|3 4x^2+2x^3-x
+        expectedIntegral.put("aGreaterThanb",         ""); //5|1 3x^2+6x-76x^4-7
         expectedIntegral.put("maxDegree",             ""); //fill this out with all terms
         expectedIntegral.put("degreeZero",            "");
         expectedIntegral.put("termsWithSameDegree",   "");
