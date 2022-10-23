@@ -55,17 +55,35 @@ public class BinTree<G extends Comparable<G>> implements Comparable<BinTree<G>>{
 
     //====================BST operations
     /**
-     * @param data Data to be entered into the tree
-     * @param direction move left or right
+     * @param newData Data to be entered into the tree
+     * @param node recursive traversal node
      */
-    public void insert(G data, Node<G> direction){}
+    public void insert(Node<G> node, G newData){
+        if(root == null){
+            root = new Node<G>(newData);
+            return;
+        }
+
+        Node<G> left = node.getLeft();
+        Node<G> right = node.getRight();
+        G nodeData = node.getData();
+
+        if (right != null && nodeData.compareTo(newData) < 0) insert(right, newData);
+        else if (left != null && nodeData.compareTo(newData) > 0) insert(left, newData);
+        else if (right == null && nodeData.compareTo(newData) < 0) node.setRight(new Node<G>(newData));
+        else if (left == null && nodeData.compareTo(newData) > 0) node.setLeft(new Node<G>(newData));
+    }
 
     /**
      * @param data Data to be found
      * @return Whether the data was found or not
      */
-    public boolean search(G data){
-        return true;
+    public boolean search(Node<G> node, G data){
+        if(node == null) return false;
+        if(node.getData() == data) return true;
+        if(node.getData().compareTo(data) < 0) search(node.getRight(), data);
+        else search(node.getRight(), data);
+        return false;
     }
 
     /**
@@ -75,6 +93,10 @@ public class BinTree<G extends Comparable<G>> implements Comparable<BinTree<G>>{
      */
     public boolean delete(G data){
         return true;
+    }
+
+    public void preoderTraversalPrintTree(Node<G> node){
+
     }
 
     //=================Getters and setters
