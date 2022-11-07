@@ -53,43 +53,82 @@ public class Main {
      */
     public static LinkedList<String> getFileData() throws FileNotFoundException {
         LinkedList<String> filedata = new LinkedList<>();
-        Scanner scnner = new Scanner(System.in);
-        FileInputStream instream = new FileInputStream(scnner.nextLine());
+        //Scanner scnner = new Scanner(System.in);
+        FileInputStream instream = new FileInputStream("testfiles/manyints.txt");
         Scanner filescnner = new Scanner(instream);
 
         while(filescnner.hasNext()){
             filedata.append(filescnner.nextLine());
         }
 
-        return filedata;
+        return cleanInput(filedata);
     }
 
     /**
      * An intermediary function meant to make parsing integral information easier and more readable
      * @param filedata a list of strings in which each string holds a single integral with spaces in it.
      * @return A linked list in which each node contains 'cleaned' integral.
-     *         All spaces must be removed from the expression, and dx removed, leaving only strings of the format ( a|b 4x^3-x+8 OR | -x^3+5x-1  )
+     *         All spaces must be removed from the expression, and dx removed, leaving only strings of the format ( a|b,4x^3-x+8 OR |-x^3+5x-1  )
      *         <p>
      *         *IF* integral contains a trig function, a space will be left between trig function and g(x)
      *
      *
      */
     public static LinkedList<String> cleanInput(LinkedList<String> filedata){
-        return new LinkedList<String>();
+        LinkedList<String> cleanedFileData = new LinkedList<>();
+        String strbuilder = "";
+        boolean boundsRead = false;
+
+        for(String str : filedata)
+        {
+          for (int i = 0; i < str.length(); i++) {
+              if(str.charAt(i) == 'd') break;
+              if(str.charAt(i) != ' '){
+                  strbuilder += str.charAt(i);                       // Case: If the character is not a S
+              } else if(i < 4 & strbuilder.length() > 1){                                      // Case: first instance of ' ' in string indicates end of Bounds. Separate with comma.
+                  strbuilder += ",";
+              } else if(str.charAt(i-1) == 'n' || str.charAt(i-1) == 's' ){
+                  // Case: trig function.
+                  strbuilder += " ";
+              }
+          }
+
+          cleanedFileData.append(strbuilder);
+          strbuilder = "";
+        }
+
+        return cleanedFileData;
     }
 
     /**
      * A simple function that loops through list of expressions and creates integrals
-     * @param filedata A 'cleaned' expression in the form: a|b 4x^3-x+8 -OR- | -x^3+5x-1.
+     * @param filedata A 'cleaned' expression with NO spaces, in the form: a|b,4x^3-x+8 -OR- |-x^3+5x-1.
      * @return a LinkedList of Integral objects. This function will call the Integral constructor and pass in the cleaned expression
      */
-    public static LinkedList<Integral> getIntegrals(LinkedList<String> filedata){return new LinkedList<Integral>();}
+    public static LinkedList<Integral> getIntegrals(LinkedList<String> filedata){
+        LinkedList<Integral> listOfIntegrals = new LinkedList<>();
+
+
+        for(String rawIntegral: filedata){
+            listOfIntegrals.append(new Integral(rawIntegral));
+            System.out.print("What the fuck");
+        }
+
+        return listOfIntegrals;
+    }
 
     /**
      * Loops through list of integrals and prints each Antiderivate / value
      * @param integrals A list of integrals
      */
-    public static void displayResults(LinkedList<Integral> integrals){}
+    public static void displayResults(LinkedList<Integral> integrals){
+
+        for(Integral integral : integrals){
+            System.out.print("What the fuck");
+            System.out.print("pp" + integrals + "\n pp" );
+        }
+
+    }
 
 
 
@@ -98,65 +137,84 @@ public class Main {
     //================================================================================================
     //===============================================================================================
     public static class Integral implements Comparable<Integral> {
-        private BinTree<Integer> treeOfTerms;
+        private BinTree<Term, Character> treeOfTerms;
         private LinkedList<Character> operatorsQueue;
         private int[] bounds;
         private Double value;
         private boolean isDefinite;
         private int constant;
+        private String stringRepresentation;
 
+
+        public Integral(){}
         /**
          *
-         * @param integral A string in the form: a|b 4x^3-x+8
+         * @param rawIntegral A string with ONLY two valid forms: a|b,4x^3-x+8 OR |4x^3-x+8
          */
-        public Integral(String integral){
-
-            //a|b 4x^3-x+8
-
-            //split expression into bounds and expression
-
-            //bounds = parsebounds(pipe) , set isDefinite
-
-            //treeOfTerms = splitTerms(expression)
-
-            //push terms to treeofterms, set constant
-        }
-
-        //mock of constructor for testing purposes, contents will be copied to Integral()
-        public static String constructorTestDriver(String integral){
-
-            return "";
+        public Integral(String rawIntegral){
+            // indefinite integral |4x^3-x+8
+            if(rawIntegral.charAt(0) == '|'){
+                isDefinite = false;
+                rawIntegral = rawIntegral.substring(1); // removes pipe from rawintegral
+                treeOfTerms = splitTermsAndPushOperators(rawIntegral);
+            }
+            //  definite integral -a|-b-4x^-3-x+8
+            else
+            {
+                isDefinite = true;
+                bounds = new int[]{Integer.parseInt(rawIntegral.substring(0, rawIntegral.indexOf('|'))), Integer.parseInt(rawIntegral.substring(rawIntegral.indexOf('|')+1, rawIntegral.indexOf(',') ))};
+                rawIntegral = rawIntegral.substring(rawIntegral.indexOf(",")+1); // removes pipe & bounds from rawintegral
+                treeOfTerms = splitTermsAndPushOperators(rawIntegral);
+            }
         }
 
         /**
          * This function contains the meat of the logic of this program.
          * TODO define test cases for every type of term, negative coefficients & exponents, coeifficients & exponents of 0, postives.
-         * @param expression A polynomial in the form: 4x^3-x+8
+         * @param expression A polynomial in the form: -4x^-3-x+8
          * @return A tree containing all the terms in the polynomial. This function also pushes all operators to a Queue. I could assign the tree to the integral within this function but I
          * want to return it to the constructor for consistency
          */
-        private BinTree<Term> splitTermsAndPushOperators(String expression){
-            BinTree<Term> tree = new BinTree<>();
-            LinkedList<Character> operatorQueue = new LinkedList<>();
+        public BinTree<Term, Character> splitTermsAndPushOperators(String expression){
+            BinTree<Term, Character> tree = new BinTree<>();
+            operatorsQueue = new LinkedList<>();
 
+            int stringStart = 0;
+            int i = (expression.charAt(0) == '-') ? 1 : 0;
+            for(; i < expression.length(); i++)
+            {   //if character is an operator
+                if(expression.charAt(i) == '-' || expression.charAt(i) == '+'){//the condition "expression.charAt(i-1) != '^'" is to eliminate cases  in which there is a negative exponent
+                    if(expression.charAt(i-1) != '^')
+                    {
+                        if(stringStart > 0 && expression.charAt(stringStart-1) == '-'){
+                            Term term = new Term(expression.substring(stringStart-1, i));
+                            tree.insert(tree.getRoot(), term);
+                            operatorsQueue.append(expression.charAt(i));
+                            stringStart = i + 1;
+                        } else {
+                            Term term = new Term(expression.substring(stringStart, i));
+                            tree.insert(tree.getRoot(), term);
+                            operatorsQueue.append(expression.charAt(i));
+                            stringStart = i + 1;
+                        }
+                    }
+                }
+            }
+            //get the last term
+            Term term = new Term(expression.substring(stringStart));
+            tree.insert(tree.getRoot(), term);
             return tree;
         }
 
-        /**
-         *
-         * @param pipe a string of the form: +-a|+-b -OR- |
-         * @return An int array in which index[0] = upper bound,  index[1] = lowerbound -OR- {0, 0} (an invalid interval of integration) if indefinite
-         *
-         */
-        private int[] parseBounds(String pipe){
-            int[] upperAndLowerBound = new int[2]; //index 0 = upper, index 1 = lower
-            if(pipe == "|"){
-                isDefinite = false;
-                return new int[]{0, 0,};
-            }
-            return upperAndLowerBound;
-        }
+        public double evaluateIntegralAtBound(int bound){
+            LinkedList<Term> integral = treeOfTerms.getListReverseInoderTraversal(treeOfTerms.getRoot(), new LinkedList<Term>());
+            double sum = 0;
 
+            for(Term term : integral){
+                sum += Math.pow(bound, term.getAntiExponent()) * term.getAntiCoefficient();
+            }
+            return sum;
+        }
 
         /**
          * Calculates the value of a definite integral
@@ -167,6 +225,73 @@ public class Main {
             return value;
         }
 
+        public BinTree<Term, Character> getTreeOfTerms() {
+            return treeOfTerms;
+        }
+
+        public void setTreeOfTerms(BinTree<Term, Character> treeOfTerms) {
+            this.treeOfTerms = treeOfTerms;
+        }
+
+        public LinkedList<Character> getOperatorsQueue() {
+            return operatorsQueue;
+        }
+
+        public void setOperatorsQueue(LinkedList<Character> operatorsQueue) {
+            this.operatorsQueue = operatorsQueue;
+        }
+
+        public int[] getBounds() {
+            return bounds;
+        }
+
+        public void setBounds(int[] bounds) {
+            this.bounds = bounds;
+        }
+
+        public Double getValue() {
+            return value;
+        }
+
+        public void setValue(Double value) {
+            this.value = value;
+        }
+
+        public boolean isDefinite() {
+            return isDefinite;
+        }
+
+        public void setDefinite(boolean definite) {
+            isDefinite = definite;
+        }
+
+        public int getConstant() {
+            return constant;
+        }
+
+        public void setConstant(int constant) {
+            this.constant = constant;
+        }
+
+        public String getStringRepresentation() {
+            return stringRepresentation;
+        }
+
+        public void setStringRepresentation(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
+        @Override
+        public String toString(){
+            Main.LinkedList<Term> terms = new Main.LinkedList<>();
+            terms = treeOfTerms.getListReverseInoderTraversal(treeOfTerms.getRoot(), terms);
+            Node<Term> node = terms.head;
+            while(node.getNext() != null && node != null){
+                stringRepresentation += node.getData().toString() + (node.getNext().getData().isNegative ? " - " : " + ");
+            }
+            stringRepresentation += node.getData().toString()  + " + C";
+            stringRepresentation = " bruh";
+            return stringRepresentation;
+        }
 
         @Override
         public int compareTo(Integral o) {
@@ -193,7 +318,7 @@ public class Main {
             } else {
                 tail.setNext(node);
             }
-            tail =  node;
+            tail = node;
             this.size++;
         }
 
@@ -338,16 +463,18 @@ public class Main {
 
         @Override
         public String toString(){
-            print(head);
-            return " ";
+            String result = "";
+            result = print(head, result);
+            return result;
         }
 
-        public void print(Node<G> node){
-            System.out.println(node.getData());
+        public String print(Node<G> node, String result){
+            result += node.getData() + "\n";
             if(node.getNext() != null){
                 node = node.getNext();
-                print(node);
+                result = print(node, result);
             }
+            return result;
         }
 
         @Override

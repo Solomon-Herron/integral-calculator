@@ -49,4 +49,9 @@ public class Node<G extends Comparable<G>> implements Comparable<Node<G>> {
     public int compareTo(Node<G> o) {
         return 0;
     }
+
+    @Override
+    public String toString(){
+        return "" + data;
+    }
 }
